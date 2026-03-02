@@ -1,0 +1,10 @@
+{
+  "Name": "VoxelGameServer",
+  "Host": "0.0.0.0",
+  "TCPPort": 8888,
+  "MaxConn": 1000,
+  "MaxPacketSize": 4096,
+  "WorkerPoolSize": 10,
+  "MaxWorkerTaskLen": 1024,
+  "MaxMsgChanLen": 512
+}

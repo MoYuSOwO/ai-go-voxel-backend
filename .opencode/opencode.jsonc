@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": true,
+
+  "instructions": [
+    ".opencode/rules.md"
+  ],
+  
+  "permission": {
+    // "ask" 表示每次修改代码或跑命令，都必须弹窗经过你同意 (Human-in-the-loop)
+    "edit": "ask",
+    "bash": "ask",
+    "write": "ask"
+  },
+
+  "compaction": {
+    "auto": true,     // 满了自动压缩，防止死循环烧钱
+    "prune": true,    // 自动清理无用的旧日志
+    "reserved": 8000  // 预留足够缓冲，防截断
+  }
+}
