@@ -1,0 +1,80 @@
+syntax = "proto3";
+package voxel;
+
+option go_package = "voxel-backend/proto";
+
+// 基础数据类型
+message Vector3 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message BlockPosition {
+    int32 x = 1;
+    int32 y = 2;
+    int32 z = 3;
+}
+
+// 数据包类型枚举（对应 Zinx 的 MsgID）
+enum PacketID {
+    LOGIN_REQUEST = 0;
+    LOGIN_RESPONSE = 1;
+    PLAYER_MOVE = 2;
+    PLACE_BLOCK = 3;
+    BREAK_BLOCK = 4;
+    CHUNK_DATA = 5;
+    PLAYER_LIST_UPDATE = 6;
+    HEARTBEAT = 7;
+}
+
+// 登录请求
+message LoginRequest {
+    string player_name = 1;
+}
+
+// 登录响应
+message LoginResponse {
+    uint32 status = 1;      // 0=成功，其他=错误码
+    uint32 player_id = 2;   // 服务器分配的玩家ID
+}
+
+// 玩家移动
+message PlayerMove {
+    uint32 player_id = 1;
+    Vector3 position = 2;
+    float rotation = 3;
+}
+
+// 放置方块
+message PlaceBlock {
+    uint32 player_id = 1;
+    BlockPosition pos = 2;
+    uint32 block_id = 3;
+}
+
+// 破坏方块
+message BreakBlock {
+    uint32 player_id = 1;
+    BlockPosition pos = 2;
+}
+
+// 区块数据
+message ChunkData {
+    int32 chunk_x = 1;
+    int32 chunk_z = 2;
+    bytes compressed_blocks = 3;  // zstd压缩后的方块数据
+    repeated uint64 entity_ids = 4; // 区块内实体ID列表
+}
+
+// 玩家列表更新
+message PlayerListUpdate {
+    message PlayerInfo {
+        uint32 player_id = 1;
+        Vector3 position = 2;
+    }
+    repeated PlayerInfo players = 1;
+}
+
+// 心跳（空消息）
+message Heartbeat {}
