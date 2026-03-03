@@ -3,6 +3,8 @@ package world
 import (
 	"math"
 	"sync"
+
+	"github.com/aceld/zinx/ziface"
 )
 
 // ============================= 实体类型定义 =============================
@@ -107,9 +109,11 @@ func (e *Entity) HasComponent(componentType ComponentType) bool {
 
 // PlayerConnection 玩家连接组件
 // 存储玩家的网络连接信息
+// 注意：这个结构体是玩家实体的网络组件，负责管理与Zinx框架的连接
 type PlayerConnection struct {
-	ConnID   uint64 // Zinx连接ID
-	PlayerID uint32 // 游戏内玩家ID（不同于连接ID）
+	ConnID   uint64             // Zinx连接ID（Zinx框架分配的连接标识）
+	PlayerID uint32             // 游戏内玩家ID（服务器分配的全局唯一ID）
+	Conn     ziface.IConnection // Zinx连接引用（用于发送数据包）
 	// 可以添加更多连接相关字段，如最后心跳时间、IP地址等
 }
 
@@ -123,8 +127,9 @@ type Player struct {
 }
 
 // NewPlayer 创建新玩家实体
-// 参数：实体ID、玩家ID、连接ID、初始位置
-func NewPlayer(entityID uint64, playerID uint32, connID uint64, position Vector3) *Player {
+// 参数：实体ID、玩家ID、连接ID、Zinx连接引用、初始位置
+// 注意：conn参数可以为nil，例如在测试环境中不需要真实连接
+func NewPlayer(entityID uint64, playerID uint32, connID uint64, conn ziface.IConnection, position Vector3) *Player {
 	// 创建基础实体
 	entity := NewEntity(entityID, EntityTypePlayer, position)
 
@@ -132,6 +137,7 @@ func NewPlayer(entityID uint64, playerID uint32, connID uint64, position Vector3
 	connComponent := &PlayerConnection{
 		ConnID:   connID,
 		PlayerID: playerID,
+		Conn:     conn,
 	}
 
 	// 创建玩家实体
@@ -172,5 +178,46 @@ func (e *Entity) MoveTo(position Vector3) {
 
 // LookAt 设置实体朝向
 func (e *Entity) LookAt(rotation float32) {
+	e.Rotation = rotation
+}
+
+// ============================= IEntity 接口实现 =============================
+
+// 编译时检查：确保Entity实现了IEntity接口
+// 这行代码没有实际运行效果，但如果Entity没有实现IEntity的所有方法，编译会失败
+var _ IEntity = (*Entity)(nil)
+
+// GetID 返回实体ID
+// 这个方法非常简单，就是返回Entity结构体的ID字段
+// 在Go语言中，这种getter方法虽然看起来多余，但为了接口统一性是必要的
+func (e *Entity) GetID() uint64 {
+	return e.ID
+}
+
+// GetType 返回实体类型
+func (e *Entity) GetType() EntityType {
+	return e.Type
+}
+
+// GetPosition 返回实体位置
+func (e *Entity) GetPosition() Vector3 {
+	return e.Position
+}
+
+// SetPosition 设置实体位置
+// 注意：这个方法直接修改Position字段，没有加锁
+// 因为Position字段的读写通常是在World的主循环中进行的，不需要额外锁
+// 如果存在并发读写的情况，需要在更高层级（如World）加锁保护
+func (e *Entity) SetPosition(position Vector3) {
+	e.Position = position
+}
+
+// GetRotation 返回实体朝向
+func (e *Entity) GetRotation() float32 {
+	return e.Rotation
+}
+
+// SetRotation 设置实体朝向
+func (e *Entity) SetRotation(rotation float32) {
 	e.Rotation = rotation
 }

@@ -74,7 +74,7 @@ func TestEntityComponents(t *testing.T) {
 
 // TestPlayerCreation 测试玩家实体创建
 func TestPlayerCreation(t *testing.T) {
-	player := NewPlayer(2001, 3001, 4001, Vector3{X: 5, Y: 0, Z: 5})
+	player := NewPlayer(2001, 3001, 4001, nil, Vector3{X: 5, Y: 0, Z: 5})
 
 	if player.Entity.ID != 2001 {
 		t.Errorf("玩家实体ID期望为2001，实际为%d", player.Entity.ID)
